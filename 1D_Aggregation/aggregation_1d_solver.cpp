@@ -36,6 +36,7 @@ struct Aggregation_1D_Solver::rhs_van
 
     void operator() (const Doub x, VecDoub_I &y, VecDoub_O &dydx)
     {
+        
         for(int i=0;i<len;i++){
             double birth=0.0;
             for(int j=0;j<len;j++){
@@ -80,6 +81,7 @@ void Aggregation_1D_Solver::geometricGrid(){
 }
 
 void Aggregation_1D_Solver::initialConditions() {
+    
     for(int i=0;i<m;i++){
         Ni.push_back(0);
     }
@@ -115,6 +117,7 @@ void Aggregation_1D_Solver::generatingETA() {
     for(int j=0;j<m;j++){
         for(int k=j;k<m;k++){
             double v = xi[j] + xi[k];
+            #pragma omp parallel
             for(int i=0;i<m-1;i++){
                 if(v>xi[i] && v<=xi[i+1]){
                     eta[i+1][j][k] = (v-xi[i])/(xi[i+1]-xi[i]);
@@ -155,6 +158,7 @@ void Aggregation_1D_Solver::solvingODE () {
     
     for(int i=0;i<nt;i++){
         double val=0.0;
+        #pragma omp parallel for reduction(+:val)
         for(int j=0;j<m;j++){
             val+=finaly[i][j];
         }
@@ -230,19 +234,23 @@ void Aggregation_1D_Solver::initializeSolver(){
     fp4 = fopen("anaden_ini.tmp", "w");
     fp5 = fopen("anaden_final.tmp", "w"); 
 
-
+    #pragma omp section
     cout << "Creating the geometric grid" << "\n";
     geometricGrid();
 
+    #pragma omp section
     cout << "Setting up Intitial Conditions" << "\n";
     initialConditions();
 
+    #pragma omp section
     cout << "Generating eta" << "\n";
     generatingETA();
 
+    #pragma omp section
     cout << "Solving the ODE" << "\n";
     solvingODE();
 
+    #pragma omp section
     cout << "Storing Data" << "\n";
     storingData();
 

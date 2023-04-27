@@ -1,4 +1,5 @@
 #include "aggregation_1d_solver.h"
+#include "omp.h"
 #include <chrono>
 
 using namespace std;
@@ -10,7 +11,7 @@ int main() {
 
     double r=2; //Geometric Ratio
     int N0=1; //Initial Total Number
-    double v0 = 0.01, v_max = 10000.0, v_min = 0.000005; // Initial Average Size, Maximum size/volume, Minimum size/volume
+    double v0 = 0.01, v_max = 10000.0, v_min = 0.000001; // Initial Average Size, Maximum size/volume, Minimum size/volume
     double t_start = 0; //Time span start (for integration)
     double t_end = 10000; // Time span end (for integration)
     double a0 =1.0; // Constant Kernel

@@ -1,4 +1,4 @@
-#include "aggregation_2D_solver.h"
+#include "aggregation_2d_solver.h"
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -31,7 +31,7 @@ struct Aggregation_2D_Solver::rhs_van
     vector<vector<vector<double>>> eta;
     vector<vector<double>> diag;
 
-    rhs_van(int len, vector<vector<vector<double>>> eta, vector<vector<double>> diag) : len(len),eta(eta), diag(diag) {}
+    rhs_van(int len, vector<vector<vector<vector<vector<vector<double>>>>>> eta, vector<vector<double>> diag) : len(len),eta(eta), diag(diag) {}
 
     void operator() (const Doub x, VecDoub_I &y, VecDoub_O &dydx)
     {
@@ -39,7 +39,7 @@ struct Aggregation_2D_Solver::rhs_van
             double birth=0.0;
             for(int j=0;j<len;j++){
                 for(int k=j;k<len;k++){
-                    birth+=((1-0.5*diag[j][k])*eta[i][j][k]*y[j]*y[k]);
+                    birth+=((1-0.5*diag[j][k])*eta[i][j][k][l][q][r]*y[j]*y[k]);
                 }
             }
             double sum=0.0;
@@ -100,15 +100,20 @@ void Aggregation_2D_Solver::geometricGrid(){
 }
 
 void Aggregation_2D_Solver::initialConditions() {
+
     for(int i=0;i<m;i++){
-        Ni.push_back(0);
+        vector<double> temp;
+        for(int j=0;j<n;j++){
+            temp.push_back(0);
+        }
+        Nij.push_back(temp);
     }
 
     // Need to change
     for(int i=0;i<m;i++){
-        
-        Ni[i]= N0*(exp(-vi[i]/v0)-exp(-vi[i+1]/v0));
-        Ni[i] = round(Ni[i]);
+        for(int j=0;j<n;j++){
+            Ni[i][j]= (16*N0/(m10*m20))*(m1/m10)*(m2/m20)*(exp(-vi[i]/v0)-exp(-vi[i+1]/v0));
+        }
     }
 }
 
@@ -138,19 +143,19 @@ void Aggregation_2D_Solver::generatingETA() {
                     for(int i=1;i<m-1;i++){
                         for(int j=1;j<n-1;j++){
                             if(v_tot>=xi[i-1] && v_tot<=xi[i] && m_tot>=yi[j-1] && m_tot<=yi[j]){
-                                eta[i][j][k] = (v_tot - xi[i-1])*(m_tot - yi[j-1])/((xi[i]-xi[i-1])*(yi[j]-yi[j-1]));
+                                eta[i][j][k][l][q][r] = (v_tot - xi[i-1])*(m_tot - yi[j-1])/((xi[i]-xi[i-1])*(yi[j]-yi[j-1]));
                                 break;
                             }
                             if(v_tot>=xi[i] && v_tot<=xi[i+1] && m_tot>=yi[j-1] && m_tot<=yi[j]){
-                                eta[i][j][k] = (xi[i+1] - v_tot)*(m_tot - yi[j-1])/((xi[i+1]-xi[i])*(yi[j]-yi[j-1]));
+                                eta[i][j][k][l][q][r] = (xi[i+1] - v_tot)*(m_tot - yi[j-1])/((xi[i+1]-xi[i])*(yi[j]-yi[j-1]));
                                 break;
                             } 
                             if(v_tot>=xi[i-1] && v_tot<=xi[i] && m_tot>=yi[j] && m_tot<=yi[j+1]){
-                                eta[i][j][k] = (v_tot - xi[i-1])*(yi[j+1]-m_tot)/((xi[i]-xi[i-1])*(yi[j+1]-yi[j]));
+                                eta[i][j][k][l][q][r] = (v_tot - xi[i-1])*(yi[j+1]-m_tot)/((xi[i]-xi[i-1])*(yi[j+1]-yi[j]));
                                 break;
                             } 
                             if(v_tot>=xi[i] && v_tot<=xi[i+1] && m_tot>=yi[j] && m_tot<=yi[j+1]){
-                                eta[i][j][k] = (xi[i+1] - v_tot)*(yi[j+1]-m_tot)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j]));
+                                eta[i][j][k][l][q][r] = (xi[i+1] - v_tot)*(yi[j+1]-m_tot)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j]));
                                 break;
                             }
                         }

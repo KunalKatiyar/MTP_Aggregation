@@ -2,14 +2,6 @@
 #define AGGREGATION_2D_SOLVER_H  
 
 
-#include "nr3.h"
-#include "stepper.h"
-#include "stepperdopr5.h"
-#include "odeint.h"
-#include <stdio.h>
-#include <iostream>
-#include <string>
-
 class Aggregation_2D_Solver
 {
     private:
